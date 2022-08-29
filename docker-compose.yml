@@ -1,6 +1,21 @@
 version: "3.9"
 
 services:
+
+  grafana:
+    container_name: grafana_container
+    image: grafana/grafana
+    ports:
+    - 3000:3000
+
+  prometheus:
+    container_name: prometheus_container
+    image: prom/prometheus
+    ports:
+    - 9090:9090
+    volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
   postgres:
     image: postgres:14.5
     container_name: postgres_container
@@ -17,9 +32,11 @@ services:
 
     ports:
     - "5432:5432"
+    expose:
+      - 5432
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U user -d test_db"]
+      test: "pg_isready -U user -d test_db"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,31 +50,14 @@ services:
           cpus: 1
           memory: "4G"
 
-  pgadmin:
-    image: dpage/pgadmin4:6.0
-    container_name: pgadmin_container
-
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "user@test.com"
-      PGADMIN_DEFAULT_PASSWORD: "password"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-
-    volumes:
-      - ./pgadmin:/var/lib/pgadmin
-
+  postgres-exporter:
+    container_name: exporter
+    image: prometheuscommunity/postgres-exporter
     ports:
-      - "5050:80"
-
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 1G
-
-    networks:
+    - 9187:9187
+    environment:
+      DATA_SOURCE_NAME: "postgresql://user:password@postgres:5432/test_db?sslmode=disable"
+    links:
       - postgres
+      - prometheus
 
-networks:
-  postgres:
-    driver: bridge
