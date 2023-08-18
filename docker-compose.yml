@@ -23,12 +23,11 @@ services:
       POSTGRES_DB: "test_db"
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "password"
-      PGDATA: "/var/lib/postgresql/data/pgdata"
 
     volumes:
-    - ./structure:/docker-entrypoint-initdb.d  # Инициализация структуры БД *.sql, *.sh
-    - .:/var/lib/postgresql/data
-    - ./postgresql.conf:/var/lib/postgresql/data/pgdata/postgresql.conf
+#    - ./structure:/docker-entrypoint-initdb.d  # Инициализация структуры БД *.sql, *.sh
+    - .data:/var/lib/postgresql/data
+    - ./scripts:/scripts
 
     ports:
     - "5432:5432"
@@ -47,7 +46,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 1
+          cpus: "1"
           memory: "4G"
 
   postgres-exporter:

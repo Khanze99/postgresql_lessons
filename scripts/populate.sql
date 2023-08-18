@@ -1,0 +1,1 @@
+INSERT INTO keywords SELECT word, catdesc, baredesc FROM pg_get_keywords();
